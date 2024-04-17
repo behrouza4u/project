@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather-Based Recommendation: Top News</title>
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <!-- Custom CSS -->
+    <link rel="text/css" href="styles.css" />
+     <style>
+          /* Custom CSS */
+          .navbar {
+            background-color: black; /* Set background color to black */
+          }
+          .navbar-brand {
+            color: white; /* Set text color to white */
+          }
+          .navbar-nav .nav-link {
+            color: white !important; /* Set link text color to white */
+          }
+          h2{
+            margin-top: 2.2rem;
+          }
+        </style>
+      </head>
+      <body>
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <a class="navbar-brand" href="/">Weather Recommendation</a>
+          <div
+            class="collapse navbar-collapse justify-content-end"
+            id="navbarNav"
+          >
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="movies">Movies</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="news">News</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        <div class="container">
+          <div class="row">
+            <div class="col">
+              <!-- <h2 class="mb-4">Top Movies Today</h2> -->
+              <div id="movies" class="row">
+                <!-- Movies will be appended here -->
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+                <h2 class="mb-4">Top News Today</h2>
+              <div id="news" class="row">
+                <!-- News cards will be appended here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <!-- Bootstrap JS -->
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+
+        <!-- Custom JS -->
+        
+        <script>
+          $(document).ready(function () {
+            fetchNewsData();
+            checkCookie();
+          });
+
+       
+
+          function checkCookie() {
+            const userDataCookie = Cookies.get('userData');
+      if (userDataCookie) {
+            // If cookie exists, show "Profile" option
+              $('#navbarNav ul.navbar-nav').append('<li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>');
+              $('#navbarNav ul.navbar-nav').append('<li class="nav-item"><a class="nav-link" href="/watchlist">Watchlist</a></li>');
+              $('#navbarNav ul.navbar-nav').append('<li class="nav-item"><a class="nav-link" href="/firebaseupload">Image upload</a></li>');
+            } else {
+              // If cookie doesn't exist, show "Register" option
+              $('#navbarNav ul.navbar-nav').append('<li class="nav-item"><a class="nav-link" href="/register">Register</a></li>');
+            }
+        }
+           // Function to fetch and parse RSS feed
+           function fetchNewsData() {
+          // Fetch news data using your '/fetchNews' route
+          $.get('/fetchNews')
+            .done(function(data) {
+              // Once news data is fetched successfully, display it
+              displayNews(data.articles);
+            })
+            .fail(function(xhr, status, error) {
+              console.error("Error fetching news data:", error);
+            });
+        }
+
+
+          // Function to display news on the page
+          function displayNews(articles) {
+            const newsSection = $("#news");
+            newsSection.empty(); // Clear previous content
+
+            articles.forEach((article) => {
+              const newsCard = `
+      <div class="card mb-3 p-3 mb-3 ml-3">
+        <div class="card-body">
+          <h5 class="card-title">${article.title}</h5>
+          <p class="card-text">${article.description}</p>
+          <a href="${article.url}" class="btn btn-primary">Read More</a>
+        </div>
+      </div>
+    `;
+              newsSection.append(newsCard);
+            });
+          }
+
+        </script>
+      </body>
+    </html>
+  </body>
+</html>

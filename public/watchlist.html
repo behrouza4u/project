@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather-Based Recommendation: WatchList</title>
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <!-- Custom CSS -->
+    <link rel="text/css" href="styles.css" />
+     <style>
+          /* Custom CSS */
+          .navbar {
+            background-color: black; /* Set background color to black */
+          }
+          .navbar-brand {
+            color: white; /* Set text color to white */
+          }
+          .navbar-nav .nav-link {
+            color: white !important; /* Set link text color to white */
+          }
+          h2{
+            margin-top: 2rem;
+          }
+        </style>
+      </head>
+      <body>
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <a class="navbar-brand" href="/">Weather Recommendation</a>
+          <div
+            class="collapse navbar-collapse justify-content-end"
+            id="navbarNav"
+          >
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="/movies">Movies</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/news">News</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        <div class="alert alert-dismissible fade" id="alertContainer" role="alert">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <strong id="alertMessage"></strong>
+      </div>
+        <div class="container">
+          <div class="row">
+            <div class="col">
+              <h2 class="mb-4">WatchList</h2>
+              <div id="movies" class="row">
+                <!-- Movies will be appended here -->
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div id="news" class="row">
+                <!-- News cards will be appended here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <!-- Bootstrap JS -->
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+
+        <!-- Custom JS -->
+        <script>
+          // Define movie genres based on weather conditions
+          $(document).ready(function () {
+            // Call function to fetch weather data
+            fetchWatchList();
+            checkCookie();
+          });
+        
+
+          function checkCookie() {
+            const userDataCookie = Cookies.get('userData');
+      if (userDataCookie) {
+            // If cookie exists, show "Profile" option
+              $('#navbarNav ul.navbar-nav').append('<li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>');
+              $('#navbarNav ul.navbar-nav').append('<li class="nav-item"><a class="nav-link" href="/watchlist">Watchlist</a></li>');
+              $('#navbarNav ul.navbar-nav').append('<li class="nav-item"><a class="nav-link" href="/firebaseupload">Image upload</a></li>');
+            } else {
+              // If cookie doesn't exist, show "Register" option
+              $('#navbarNav ul.navbar-nav').append('<li class="nav-item"><a class="nav-link" href="/register">Register</a></li>');
+            }
+        }
+         
+
+function fetchWatchList() {
+  // Fetch movie recommendations using your '/movieRecommendations' route
+  $.get('/movieWatchList')
+    .done(function (data) {
+      // Once movie recommendations are fetched successfully, display them
+      displayMovies(data);
+    })
+    .fail(function (xhr, status, error) {
+      console.error("Error fetching movie watchlist:", error);
+    });
+}
+
+          // Function to display movies on the page
+          function displayMovies(movies) {
+            const moviesSection = $("#movies");
+            moviesSection.empty(); // Clear previous content
+
+            movies.forEach((movie) => {
+              const movieCard = `
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+        <div class="card">
+          <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" class="card-img-top" alt="${movie.title}">
+          <div class="card-body">
+            <h5 class="card-title">${movie.title}</h5>
+            <p class="card-text">Release Date: ${movie.release_date}</p>
+            <button class="btn btn-primary remove-from-watchlist" data-movie-id="${movie.id}">Remove From Watchlist</button>
+          </div>
+        </div>
+      </div>
+    `;
+              moviesSection.append(movieCard);
+            });
+          }
+            // Attach click event listener to the document for delegated handling
+    $(document).on("click", ".remove-from-watchlist", function () {
+        const movieId = $(this).data("movie-id");
+
+        // Send a request to /saveMovie with the movie ID
+        $.post("/removeMovie", { movieId })
+            .done(function (response) {
+                // Display success message in the alert container
+                showAlert("primary", "Movie removed to watchlist successfully");
+                window.location.href = '/watchlist';
+            })
+            .fail(function (xhr, status, error) {
+                // Display failure message in the alert container
+                showAlert("secondary", "Failed to remove movie from watchlist ");
+            });
+    });
+
+
+// Function to display Bootstrap alert
+function showAlert(type, message) {
+    $("#alertContainer").removeClass("alert-primary alert-secondary alert-success alert-danger alert-warning alert-info alert-light alert-dark fade show"); // Remove previous alert classes
+    $("#alertContainer").addClass("alert-" + type + " fade show"); // Add new alert class
+    $("#alertMessage").text(message); // Set alert message
+    setTimeout(function () {
+        $("#alertContainer").removeClass("show"); // Hide the alert after 3 seconds
+    }, 3000);
+}
+        </script>
+      </body>
+    </html>
+  </body>
+</html>
